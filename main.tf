@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket = "rm-terraform-backend"
-    key    = "terraform-env-test"
+    bucket = "YOUR_BACKEND"
+    key    = "YOUR_KEY"
     region = "YOUR_REGION"
   }
 }
