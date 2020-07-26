@@ -68,7 +68,7 @@ module "aws-databases" {
   source = "github.com/implementing-microservices/module-flights-aws-db"
   
   aws_region    = local.aws_region
-  tf_group_name = "terraform-group"
+  tf_group_name = "Ops-Accounts"
   vpc_id        = module.aws-network.vpc_id
   env_name      = local.env_name
 }
