@@ -24,11 +24,6 @@ jobs:
         chmod +x ~/aws/aws-iam-authenticator
         echo "::add-path::~/aws"
 
-    - name: Install Istio CLI
-      run: |
-        curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.3 sh -
-        echo "::add-path::./istio-1.6.3/bin"
-                
     - uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: 0.12.19
