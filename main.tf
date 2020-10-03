@@ -45,8 +45,8 @@ module "aws-kubernetes-cluster" {
 }
 
 module "nginx-ingress" {
-  source = "github.com/implementing-microservices/module-aws-nginx-ingress" 
-  
+  source = "github.com/implementing-microservices/module-aws-nginx-ingress"
+
   kubernetes_cluster_id        = module.aws-kubernetes-cluster.eks_cluster_id
   kubernetes_cluster_name      = module.aws-kubernetes-cluster.eks_cluster_name
   kubernetes_cluster_cert_data = module.aws-kubernetes-cluster.eks_cluster_certificate_data
@@ -66,9 +66,12 @@ module "argo-cd-server" {
 
 module "aws-databases" {
   source = "github.com/implementing-microservices/module-flights-aws-db"
-  
+
   aws_region    = local.aws_region
   tf_group_name = "terraform-group"
   vpc_id        = module.aws-network.vpc_id
+  eks_id        = module.aws-kubernetes-cluster.eks_cluster_id
+  subnet_a_id   = module.aws-network.private_subnet_ids[0]
+  subnet_b_id   = module.aws-network.private_subnet_ids[1]
   env_name      = local.env_name
 }
