@@ -74,4 +74,5 @@ module "aws-databases" {
   subnet_a_id   = module.aws-network.private_subnet_ids[0]
   subnet_b_id   = module.aws-network.private_subnet_ids[1]
   env_name      = local.env_name
+  route53_id    = module.aws-network.route53_id
 }
