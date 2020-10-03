@@ -1,0 +1,55 @@
+name: Environment Provisioning
+
+on:
+  create:
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        TF_VAR_MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+ 
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install aws-iam-authenticator
+      run: |
+        echo Installing aws-iam-authenticator...
+        mkdir ~/aws
+        curl -o ~/aws/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/aws-iam-authenticator
+        chmod +x ~/aws/aws-iam-authenticator
+        echo "::add-path::~/aws"
+
+    - name: Install Istio CLI
+      run: |
+        curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.3 sh -
+        echo "::add-path::./istio-1.6.3/bin"
+                
+    - uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.12.19
+
+    - name: Terraform fmt
+      run: terraform fmt
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      run: terraform plan -no-color
+    
+    - name: Terraform Apply
+      run: terraform apply -no-color -auto-approve 
+
+    - name: Upload kubeconfig file
+      uses: actions/upload-artifact@v2
+      with:
+        name: kubeconfig
+        path: kubeconfig

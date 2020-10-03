@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket = "rm-terraform-backend"
-    key    = "terraform-env-test"
+    bucket = "YOUR_BACKEND"
+    key    = "YOUR_KEY"
     region = "YOUR_REGION"
   }
 }
@@ -68,7 +68,7 @@ module "aws-databases" {
   source = "github.com/implementing-microservices/module-flights-aws-db"
 
   aws_region    = local.aws_region
-  tf_group_name = "terraform-group"
+  tf_group_name = "Ops-Accounts"
   vpc_id        = module.aws-network.vpc_id
   eks_id        = module.aws-kubernetes-cluster.eks_cluster_id
   subnet_a_id   = module.aws-network.private_subnet_ids[0]
