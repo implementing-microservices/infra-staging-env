@@ -22,7 +22,7 @@ jobs:
         mkdir ~/aws
         curl -o ~/aws/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/aws-iam-authenticator
         chmod +x ~/aws/aws-iam-authenticator
-        echo "::add-path::~/aws"
+        sudo cp ~/aws/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 
     - uses: hashicorp/setup-terraform@v1
       with:
