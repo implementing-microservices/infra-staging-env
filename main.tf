@@ -17,6 +17,10 @@ variable "mysql_password" {
   description = "Expected to be retrieved from environment variable TF_VAR_mysql_password"
 }
 
+provider "aws" {
+  region = local.aws_region
+}
+
 data "aws_eks_cluster" "msur" {
   name = module.aws-kubernetes-cluster.eks_cluster_id
 }
@@ -102,6 +106,7 @@ module "aws-databases" {
 module "traefik" {
   source = "github.com/implementing-microservices/module-aws-traefik/"
 
+  aws_region                   = local.aws_region
   kubernetes_cluster_id        = data.aws_eks_cluster.msur.id
   kubernetes_cluster_name      = module.aws-kubernetes-cluster.eks_cluster_name
   kubernetes_cluster_cert_data = module.aws-kubernetes-cluster.eks_cluster_certificate_data
@@ -109,4 +114,3 @@ module "traefik" {
 
   eks_nodegroup_id = module.aws-kubernetes-cluster.eks_cluster_nodegroup_id
 }
-
