@@ -100,7 +100,7 @@ module "aws-databases" {
 }
 
 module "traefik" {
-  source = "../../tf_modules/module-aws-traefik/"
+  source = "github.com/implementing-microservices/module-aws-traefik/"
 
   kubernetes_cluster_id        = data.aws_eks_cluster.msur.id
   kubernetes_cluster_name      = module.aws-kubernetes-cluster.eks_cluster_name
