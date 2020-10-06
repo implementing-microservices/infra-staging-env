@@ -17,6 +17,10 @@ variable "mysql_password" {
   description = "Expected to be retrieved from environment variable TF_VAR_mysql_password"
 }
 
+data "aws_eks_cluster" "msur" {
+  name = module.aws-kubernetes-cluster.eks_cluster_id
+}
+
 module "aws-network" {
   source = "github.com/implementing-microservices/module-aws-network"
 
@@ -49,19 +53,32 @@ module "aws-kubernetes-cluster" {
   nodegroup_max_size       = 5
 }
 
-module "nginx-ingress" {
-  source = "github.com/implementing-microservices/module-aws-nginx-ingress"
+# Create namespace
+# Use kubernetes provider to work with the kubernetes cluster API
+provider "kubernetes" {
+  load_config_file       = false
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.msur.certificate_authority.0.data)
+  host                   = data.aws_eks_cluster.msur.endpoint
+  exec {
+    api_version = "client.authentication.k8s.io/v1alpha1"
+    command     = "aws-iam-authenticator"
+    args        = ["token", "-i", "${data.aws_eks_cluster.msur.name}"]
+  }
+}
 
-  kubernetes_cluster_id        = module.aws-kubernetes-cluster.eks_cluster_id
-  kubernetes_cluster_name      = module.aws-kubernetes-cluster.eks_cluster_name
-  kubernetes_cluster_cert_data = module.aws-kubernetes-cluster.eks_cluster_certificate_data
-  kubernetes_cluster_endpoint  = module.aws-kubernetes-cluster.eks_cluster_endpoint
+# Create a namespace for microservice pods
+resource "kubernetes_namespace" "ms-namespace" {
+  metadata {
+    name = "microservices"
+  }
 }
 
 module "argo-cd-server" {
   source = "github.com/implementing-microservices/module-argo-cd"
 
-  kubernetes_cluster_id        = module.aws-kubernetes-cluster.eks_cluster_id
+  aws_region         = local.aws_region
+  kubernetes_cluster_id        = data.aws_eks_cluster.msur.id
+  
   kubernetes_cluster_name      = module.aws-kubernetes-cluster.eks_cluster_name
   kubernetes_cluster_cert_data = module.aws-kubernetes-cluster.eks_cluster_certificate_data
   kubernetes_cluster_endpoint  = module.aws-kubernetes-cluster.eks_cluster_endpoint
@@ -75,9 +92,21 @@ module "aws-databases" {
   aws_region     = local.aws_region
   mysql_password = var.mysql_password
   vpc_id         = module.aws-network.vpc_id
-  eks_id         = module.aws-kubernetes-cluster.eks_cluster_id
+  eks_id         = data.aws_eks_cluster.msur.id
   subnet_a_id    = module.aws-network.private_subnet_ids[0]
   subnet_b_id    = module.aws-network.private_subnet_ids[1]
   env_name       = local.env_name
   route53_id     = module.aws-network.route53_id
 }
+
+module "traefik" {
+  source = "../../tf_modules/module-aws-traefik/"
+
+  kubernetes_cluster_id        = data.aws_eks_cluster.msur.id
+  kubernetes_cluster_name      = module.aws-kubernetes-cluster.eks_cluster_name
+  kubernetes_cluster_cert_data = module.aws-kubernetes-cluster.eks_cluster_certificate_data
+  kubernetes_cluster_endpoint  = module.aws-kubernetes-cluster.eks_cluster_endpoint
+
+  eks_nodegroup_id = module.aws-kubernetes-cluster.eks_cluster_nodegroup_id
+}
+
