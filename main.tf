@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "YOUR_BACKEND"
+    bucket = "YOUR_BUCKET"
     key    = "YOUR_KEY"
     region = "YOUR_REGION"
   }
