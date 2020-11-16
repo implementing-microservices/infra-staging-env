@@ -22,7 +22,8 @@ provider "aws" {
 }
 
 data "aws_eks_cluster" "msur" {
-  name = module.aws-kubernetes-cluster.eks_cluster_id
+  name              = module.aws-kubernetes-cluster.eks_cluster_id
+  security_group_id = module.aws-kubernetes-cluster.eks_cluster_security_group_id
 }
 
 module "aws-network" {
@@ -97,6 +98,7 @@ module "aws-databases" {
   mysql_password = var.mysql_password
   vpc_id         = module.aws-network.vpc_id
   eks_id         = data.aws_eks_cluster.msur.id
+  eks_sg_id      = data.aws_eks_cluster.msur.security_group_id
   subnet_a_id    = module.aws-network.private_subnet_ids[0]
   subnet_b_id    = module.aws-network.private_subnet_ids[1]
   env_name       = local.env_name
